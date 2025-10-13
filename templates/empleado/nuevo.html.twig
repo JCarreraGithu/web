@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Registrar Nuevo Empleado{% endblock %}
+
+{% block stylesheets %}
+    {# Agrega Bootstrap desde CDN #}
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="mb-4">Registrar Nuevo Empleado</h1>
+
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">{{ message }}</div>
+    {% endfor %}
+
+    {{ form_start(form, {'attr': {'class': 'row g-3'}}) }}
+
+        <div class="col-md-6">
+            {{ form_label(form.nombre) }}
+            {{ form_widget(form.nombre, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.nombre) }}
+        </div>
+
+        <div class="col-md-6">
+            {{ form_label(form.apellido) }}
+            {{ form_widget(form.apellido, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.apellido) }}
+        </div>
+
+        <div class="col-md-6">
+            {{ form_label(form.fecha_nacimiento) }}
+            {{ form_widget(form.fecha_nacimiento, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.fecha_nacimiento) }}
+        </div>
+
+        <div class="col-md-6">
+            {{ form_label(form.fotografia) }}
+            {{ form_widget(form.fotografia, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.fotografia) }}
+        </div>
+
+        <div class="col-md-6">
+            {{ form_label(form.salario) }}
+            {{ form_widget(form.salario, {'attr': {'class': 'form-control'}}) }}
+            {{ form_errors(form.salario) }}
+        </div>
+
+        <div class="col-md-6">
+            {{ form_label(form.puesto) }}
+            {{ form_widget(form.puesto, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.puesto) }}
+        </div>
+
+        <div class="col-md-6">
+            {{ form_label(form.tienda) }}
+            {{ form_widget(form.tienda, {'attr': {'class': 'form-select'}}) }}
+            {{ form_errors(form.tienda) }}
+        </div>
+
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary mt-3">Registrar Empleado</button>
+        </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}
