@@ -1,0 +1,44 @@
+{% extends 'dashboard/layout.html.twig' %}
+{% block title %}Reporte de Logros{% endblock %}
+
+{% block dashboard_content %}
+<div class="container mt-4">
+  <h2 class="mb-4 text-center">🏆 Reporte de Logros por Empleado</h2>
+
+  {% for empleado, logros in agrupados %}
+    <div class="card mb-3 shadow-sm">
+      <div class="card-header bg-dark text-white">
+        <h5 class="mb-0">{{ empleado }}</h5>
+      </div>
+      <div class="card-body">
+        <table class="table table-striped text-center align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Descripción</th>
+              <th>Tipo</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in logros %}
+              <tr>
+                <td>{{ l.description }}</td>
+                <td>
+                  {% if l.tipo == 'positivo' %}
+                    <span class="badge bg-success">Positivo</span>
+                  {% else %}
+                    <span class="badge bg-danger">Negativo</span>
+                  {% endif %}
+                </td>
+                <td>{{ l.fechaOcurrencia|date('d/m/Y') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  {% else %}
+    <p class="text-center text-muted">No hay logros registrados.</p>
+  {% endfor %}
+</div>
+{% endblock %}

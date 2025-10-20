@@ -1,0 +1,34 @@
+{% extends 'dashboard/layout.html.twig' %}
+{% block title %}👤 Detalle de Empleado{% endblock %}
+
+{% block dashboard_content %}
+<div class="container py-4">
+  <div class="card shadow-sm border-0 rounded-4">
+    <div class="card-body p-4">
+      <div class="d-flex align-items-center gap-4">
+        {% if e.fotografia %}
+          <img src="{{ asset('uploads/' ~ e.fotografia) }}" class="rounded-circle border shadow-sm" style="width:120px;height:120px;object-fit:cover;">
+        {% else %}
+          <div class="rounded-circle bg-secondary-subtle d-flex justify-content-center align-items-center" style="width:120px;height:120px;">
+            <i class="bi bi-person fs-1 text-secondary"></i>
+          </div>
+        {% endif %}
+
+        <div>
+          <h3 class="mb-1">{{ e.nombre }} {{ e.apellido }}</h3>
+          <p class="mb-0 text-muted">Puesto: <strong>{{ e.puesto.nombre }}</strong></p>
+          <p class="mb-0 text-muted">Tienda: <strong>{{ e.tienda.nombre }}</strong></p>
+          <p class="mb-0 text-muted">Salario: <strong>Q{{ e.salario|number_format(2, '.', ',') }}</strong></p>
+          <p class="mb-0 text-muted">Nacimiento: <strong>{{ e.fechaNacimiento|date('d/m/Y') }}</strong></p>
+        </div>
+      </div>
+
+      <div class="mt-4 d-flex gap-2">
+        <a href="{{ path('empleado_editar', {id: e.id}) }}" class="btn btn-warning">Editar</a>
+        <a href="{{ path('empleado_eliminar', {id: e.id}) }}" class="btn btn-danger" onclick="return confirm('¿Eliminar a {{ e.nombre }}?')">Eliminar</a>
+        <a href="{{ path('empleados_lista') }}" class="btn btn-secondary">Volver</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

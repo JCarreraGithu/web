@@ -25,7 +25,7 @@ class Empleados
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTime $fecha_nacimiento = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $fotografia = null;
 
     #[ORM\ManyToOne(inversedBy: 'empleados')]
@@ -99,12 +99,12 @@ class Empleados
         return $this->fotografia;
     }
 
-    public function setFotografia(string $fotografia): static
-    {
-        $this->fotografia = $fotografia;
+    public function setFotografia(?string $fotografia): static
+{
+    $this->fotografia = $fotografia;
+    return $this;
+}
 
-        return $this;
-    }
 
     public function getPuesto(): ?Puestos
     {

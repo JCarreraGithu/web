@@ -1,0 +1,72 @@
+{% extends 'dashboard/layout.html.twig' %}
+{% block title %}Lista de Logros{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid py-4">
+
+  <!-- Encabezado -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3 class="fw-bold text-primary mb-0">
+      <i class="bi bi-star-fill me-2"></i> Lista de Logros
+    </h3>
+    <a href="{{ path('logro_nuevo') }}" class="btn btn-gradient shadow-sm px-4 py-2 fw-semibold"
+       style="background: linear-gradient(135deg, #0d6efd, #6610f2); color: #fff;">
+      <i class="bi bi-plus-circle me-2"></i> Agregar Logro
+    </a>
+  </div>
+
+  <!-- Mensajes de éxito -->
+  {% for message in app.flashes('success') %}
+    <div class="alert alert-success alert-dismissible fade show shadow-sm" role="alert">
+      <i class="bi bi-check-circle-fill me-2"></i> {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+  {% endfor %}
+
+  <!-- Tarjeta principal -->
+  <div class="card border-0 shadow-lg rounded-4">
+    <div class="card-body bg-light rounded-4 p-4">
+
+      <div class="table-responsive">
+        <table class="table table-hover table-bordered align-middle text-center bg-white rounded-3 overflow-hidden">
+          <thead class="table-primary">
+            <tr class="fw-semibold text-dark">
+              <th>ID</th>
+              <th>Empleado</th>
+              <th>Descripción</th>
+              <th>Tipo</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in logros %}
+              <tr>
+                <td class="fw-bold text-secondary">{{ l.id }}</td>
+                <td class="fw-semibold">{{ l.empleado.nombre }} {{ l.empleado.apellido }}</td>
+                <td class="text-start">
+                  <i class="bi bi-chat-left-quote-fill text-info me-2"></i>{{ l.description }}
+                </td>
+                <td>
+                  {% if l.tipo == 'positivo' %}
+                    <span class="badge bg-success px-3 py-2"><i class="bi bi-hand-thumbs-up-fill me-1"></i>Positivo</span>
+                  {% else %}
+                    <span class="badge bg-danger px-3 py-2"><i class="bi bi-hand-thumbs-down-fill me-1"></i>Negativo</span>
+                  {% endif %}
+                </td>
+                <td>{{ l.fechaOcurrencia|date('d/m/Y') }}</td>
+              </tr>
+            {% else %}
+              <tr>
+                <td colspan="5" class="text-muted py-4">
+                  <i class="bi bi-emoji-smile text-secondary me-2"></i> No hay logros registrados.
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

@@ -22,10 +22,10 @@ class EmpleadoType extends AbstractType
             ->add('fecha_nacimiento', DateType::class, [
                 'widget' => 'single_text',
             ])
-            ->add('fotografia', FileType::class, [
-                'mapped' => false,
-                'required' => false,
-            ])
+           ->add('fotografia', FileType::class, [
+    'mapped' => false,
+    'required' => false,
+])
             ->add('salario')
             ->add('puesto', EntityType::class, [
                 'class' => Puestos::class,

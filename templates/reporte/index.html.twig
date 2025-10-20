@@ -1,0 +1,98 @@
+{% extends 'dashboard/layout.html.twig' %}
+
+{% block title %}Reportes Generales{% endblock %}
+
+{% block dashboard_content %}
+<div class="container-fluid py-4">
+
+  <div class="card shadow-lg border-0 rounded-4 mb-5">
+    <div class="card-header bg-gradient text-white rounded-top-4 p-3"
+         style="background: linear-gradient(135deg, #0d6efd, #6610f2);">
+      <h3 class="mb-0 fw-bold">
+        <i class="bi bi-graph-up me-2"></i> Reportes Generales
+      </h3>
+    </div>
+
+    <div class="card-body bg-light px-5 py-4">
+
+      <section class="mb-5">
+        <h4 class="fw-bold mb-3 border-bottom pb-2 text-primary">
+          <i class="bi bi-people-fill me-2"></i> Lista General de Empleados
+        </h4>
+
+        <div class="table-responsive shadow-sm">
+          <table class="table table-hover table-bordered align-middle text-center bg-white">
+            <thead class="table-primary text-dark">
+              <tr>
+                <th>Fotografía</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Puesto</th>
+                <th>Tienda</th>
+                <th>Salario (Q)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for e in empleados %}
+                <tr>
+                  <td>
+                    <img src="/uploads/{{ e.fotografia }}" width="60" height="60"
+                         class="rounded-circle shadow-sm border border-2 border-secondary-subtle">
+                  </td>
+                  <td class="fw-semibold">{{ e.nombre }}</td>
+                  <td>{{ e.apellido }}</td>
+                  <td><span class="badge bg-info text-dark">{{ e.puesto.nombre }}</span></td>
+                  <td>{{ e.tienda.nombre }}</td>
+                  <td class="fw-bold text-success">Q{{ e.salario|number_format(2, '.', ',') }}</td>
+                </tr>
+              {% else %}
+                <tr>
+                  <td colspan="6" class="text-muted py-4">No hay empleados registrados</td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <h5 class="mt-3 text-end text-dark">
+          <strong>Total Salarios:</strong>
+          <span class="text-success">Q{{ totalSalarios|number_format(2, '.', ',') }}</span>
+        </h5>
+      </section>
+
+      <hr class="my-4">
+
+      <section>
+        <h4 class="fw-bold mb-4 text-primary">
+          <i class="bi bi-bar-chart-line me-2"></i> Desempeño General
+        </h4>
+
+        <div class="row g-4 text-center">
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+              <div class="card-body">
+                <h5 class="fw-semibold text-success mb-2">
+                  <i class="bi bi-trophy-fill me-2"></i> Logros Positivos
+                </h5>
+                <h2 class="fw-bold text-success display-5">{{ positivos }}</h2>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 bg-white">
+              <div class="card-body">
+                <h5 class="fw-semibold text-danger mb-2">
+                  <i class="bi bi-exclamation-triangle-fill me-2"></i> Llamadas de Atención
+                </h5>
+                <h2 class="fw-bold text-danger display-5">{{ negativos }}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+{% endblock %}

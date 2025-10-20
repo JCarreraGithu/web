@@ -1,46 +1,167 @@
-{% extends 'base.html.twig' %}
+{% extends 'dashboard/layout.html.twig' %}
+{% block title %}👷 Lista de Empleados{% endblock %}
 
-{% block title %}Lista de Empleados{% endblock %}
+{% block dashboard_content %}
+<style>
+  body {
+    background: radial-gradient(circle at top left, #0a0f1e, #111827);
+    color: #e2e8f0;
+  }
+  .card {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .card-header {
+    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  }
+  .table { color: #f8fafc; }
+  .table thead { background: linear-gradient(135deg, #2563eb, #7c3aed); }
+  .table thead th { color: #fff; border: none; }
+  .table-hover tbody tr:hover {
+    background: rgba(100, 149, 237, 0.1) !important;
+    transition: all 0.25s ease-in-out;
+  }
+  .badge {
+    font-size: 0.85rem; font-weight: 600; border-radius: 12px; backdrop-filter: blur(5px);
+  }
+  .badge.bg-primary-subtle { background: linear-gradient(135deg, #60a5fa, #3b82f6); color: #fff !important; }
+  .badge.bg-info-subtle { background: linear-gradient(135deg, #67e8f9, #06b6d4); color: #083344 !important; }
+  .btn-light { background: rgba(255, 255, 255, 0.9); }
+  .btn-light:hover { background: #f8fafc; box-shadow: 0 0 10px rgba(255, 255, 255, 0.3); }
+  .btn-outline-primary:hover { background: #2563eb; color: #fff; }
+  .btn-outline-warning:hover { background: #facc15; color: #000; }
+  .btn-outline-danger:hover { background: #ef4444; color: #fff; }
+  .alert-success {
+    background: rgba(16, 185, 129, 0.15); color: #bbf7d0; border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  h3 { color: #93c5fd; }
+</style>
 
-{% block stylesheets %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-{% endblock %}
+<div class="container-fluid py-4">
+  <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+    <div class="card-header text-white d-flex justify-content-between align-items-center p-3 rounded-top-4">
+      <h3 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2"></i> Lista de Empleados</h3>
+      <button class="btn btn-light btn-sm fw-semibold shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#nuevoEmpleadoModal">
+        <i class="bi bi-person-plus-fill text-primary"></i> Nuevo Empleado
+      </button>
+    </div>
 
-{% block body %}
-<div class="container mt-5">
-    <h1 class="mb-4">Lista de Empleados</h1>
+    <div class="card-body p-4">
+      {% for message in app.flashes('success') %}
+        <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i>{{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
 
-    <table class="table table-striped table-bordered align-middle">
-        <thead class="table-dark">
+      <div class="table-responsive rounded-4 shadow-sm">
+        <table class="table align-middle table-borderless table-hover mb-0">
+          <thead>
             <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Fecha Nacimiento</th>
-                <th>Fotografía</th>
-                <th>Puesto</th>
-                <th>Tienda</th>
-                <th>Salario</th>
+              <th>#</th>
+              <th>Foto</th>
+              <th>Nombre</th>
+              <th>Apellido</th>
+              <th>Puesto</th>
+              <th>Tienda</th>
+              <th>Salario</th>
+              <th>Nacimiento</th>
+              <th class="text-center">Acciones</th>
             </tr>
-        </thead>
-        <tbody>
+          </thead>
+          <tbody>
             {% for e in empleados %}
-                <tr>
-                    <td>{{ e.id }}</td>
-                    <td>{{ e.nombre }}</td>
-                    <td>{{ e.apellido }}</td>
-                    <td>{{ e.fechaNacimiento ? e.fechaNacimiento|date('Y-m-d') : '' }}</td>
-                    <td>
-                        {% if e.fotografia %}
-                            <img src="{{ asset('uploads/' ~ e.fotografia) }}" width="60" class="rounded">
-                        {% endif %}
-                    </td>
-                    <td>{{ e.puesto.nombre }}</td>
-                    <td>{{ e.tienda.nombre }}</td>
-                    <td>{{ e.salario|number_format(2, '.', ',') }}</td>
-                </tr>
+              <tr>
+                <td class="fw-bold text-secondary">{{ e.id }}</td>
+                <td>
+                  {% if e.fotografia %}
+                    <img src="{{ asset('uploads/' ~ e.fotografia) }}" alt="foto"
+                         class="rounded-circle shadow-sm border border-secondary"
+                         style="width:55px;height:55px;object-fit:cover;">
+                  {% else %}
+                    <div class="d-flex justify-content-center align-items-center bg-dark-subtle rounded-circle"
+                         style="width:55px;height:55px;">
+                      <i class="bi bi-person text-secondary fs-4"></i>
+                    </div>
+                  {% endif %}
+                </td>
+                <td class="fw-semibold text-white">{{ e.nombre }}</td>
+                <td class="fw-semibold text-white">{{ e.apellido }}</td>
+                <td><span class="badge bg-primary-subtle px-3 py-2 shadow-sm">{{ e.puesto.nombre }}</span></td>
+                <td><span class="badge bg-info-subtle px-3 py-2 shadow-sm">{{ e.tienda.nombre }}</span></td>
+                <td class="fw-semibold text-success">Q{{ e.salario|number_format(2, '.', ',') }}</td>
+                <td class="text-light">{{ e.fechaNacimiento|date('d/m/Y') }}</td>
+                <td class="text-center">
+                  <div class="btn-group" role="group">
+                    <a href="{{ path('empleado_ver', {'id': e.id}) }}" class="btn btn-outline-primary btn-sm shadow-sm" title="Ver"><i class="bi bi-eye"></i></a>
+                    <a href="{{ path('empleado_editar', {'id': e.id}) }}" class="btn btn-outline-warning btn-sm shadow-sm" title="Editar"><i class="bi bi-pencil-square"></i></a>
+                    <a href="{{ path('empleado_eliminar', {'id': e.id}) }}"
+                       class="btn btn-outline-danger btn-sm shadow-sm"
+                       onclick="return confirm('¿Seguro que deseas eliminar a {{ e.nombre }}?')" title="Eliminar">
+                       <i class="bi bi-trash"></i>
+                    </a>
+                  </div>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="9" class="text-center text-muted py-4"><i class="bi bi-emoji-frown"></i> No hay empleados registrados.</td></tr>
             {% endfor %}
-        </tbody>
-    </table>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVO EMPLEADO -->
+<div class="modal fade" id="nuevoEmpleadoModal" tabindex="-1" aria-labelledby="nuevoEmpleadoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content rounded-4 shadow-lg border-0">
+      <div class="modal-header bg-gradient text-white" style="background: linear-gradient(135deg, #2563eb, #7c3aed);">
+        <h5 class="modal-title fw-bold" id="nuevoEmpleadoModalLabel"><i class="bi bi-person-plus-fill me-2"></i> Registrar Nuevo Empleado</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body bg-light p-4">
+        {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            {{ form_label(form.nombre, 'Nombre') }}
+            {{ form_widget(form.nombre, {'attr': {'class': 'form-control'}}) }}
+          </div>
+          <div class="col-md-6 mb-3">
+            {{ form_label(form.apellido, 'Apellido') }}
+            {{ form_widget(form.apellido, {'attr': {'class': 'form-control'}}) }}
+          </div>
+          <div class="col-md-6 mb-3">
+            {{ form_label(form.fecha_nacimiento, 'Fecha de Nacimiento') }}
+            {{ form_widget(form.fecha_nacimiento, {'attr': {'class': 'form-control'}}) }}
+          </div>
+          <div class="col-md-6 mb-3">
+            {{ form_label(form.salario, 'Salario') }}
+            {{ form_widget(form.salario, {'attr': {'class': 'form-control'}}) }}
+          </div>
+          <div class="col-md-6 mb-3">
+            {{ form_label(form.puesto, 'Puesto') }}
+            {{ form_widget(form.puesto, {'attr': {'class': 'form-select'}}) }}
+          </div>
+          <div class="col-md-6 mb-3">
+            {{ form_label(form.tienda, 'Tienda') }}
+            {{ form_widget(form.tienda, {'attr': {'class': 'form-select'}}) }}
+          </div>
+          <div class="col-md-12 mb-3">
+            {{ form_label(form.fotografia, 'Fotografía') }}
+            {{ form_widget(form.fotografia, {'attr': {'class': 'form-control'}}) }}
+          </div>
+        </div>
+        <div class="text-end">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+        {{ form_end(form) }}
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}

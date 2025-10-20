@@ -1,0 +1,46 @@
+{% extends 'dashboard/layout.html.twig' %}
+{% block title %}Panel Intelafix{% endblock %}
+
+{% block dashboard_content %}
+<div class="container py-4">
+  <h3 class="fw-bold mb-4">Bienvenido, {{ app.user.username }}</h3>
+
+  <div class="row text-center">
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Empleados</h5>
+          <h2>{{ totalEmpleados }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h5>Tiendas</h5>
+          <h2>{{ totalTiendas }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm text-success">
+        <div class="card-body">
+          <h5>Logros Positivos</h5>
+          <h2>{{ positivos }}</h2>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-3 mb-3">
+      <div class="card shadow-sm text-danger">
+        <div class="card-body">
+          <h5>Llamadas de Atención</h5>
+          <h2>{{ negativos }}</h2>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
