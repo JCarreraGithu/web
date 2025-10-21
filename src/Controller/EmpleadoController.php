@@ -19,7 +19,6 @@ class EmpleadoController extends AbstractController
     {
         $empleados = $em->getRepository(Empleados::class)->findAll();
 
-        // Formulario incluido dentro del modal
         $form = $this->createForm(EmpleadoType::class, new Empleados(), [
             'action' => $this->generateUrl('empleado_nuevo'),
             'method' => 'POST',
@@ -44,7 +43,7 @@ class EmpleadoController extends AbstractController
             if ($fotoFile) {
                 $originalFilename = pathinfo($fotoFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$fotoFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $fotoFile->guessExtension();
 
                 try {
                     $fotoFile->move(
@@ -74,7 +73,7 @@ class EmpleadoController extends AbstractController
     #[Route('/empleado/{id}', name: 'empleado_ver', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function ver(Empleados $empleado): Response
     {
-        return $this->render('empleado/ver.html.twig', [
+        return $this->render('empleado/_detalle.html.twig', [
             'e' => $empleado,
         ]);
     }
@@ -91,7 +90,7 @@ class EmpleadoController extends AbstractController
             if ($fotoFile) {
                 $originalFilename = pathinfo($fotoFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$fotoFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $fotoFile->guessExtension();
 
                 try {
                     $fotoFile->move(

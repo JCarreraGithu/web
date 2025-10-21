@@ -1,0 +1,35 @@
+<style>
+  .detalle-container {
+    color: #212529;
+  }
+  .detalle-container h4 {
+    color: #0d6efd;
+  }
+  .detalle-container p {
+    color: #212529;
+    margin-bottom: 4px;
+  }
+</style>
+
+<div class="detalle-container d-flex align-items-center gap-4">
+  {% if e.fotografia %}
+    <img src="{{ asset('uploads/' ~ e.fotografia) }}" class="rounded-circle border shadow-sm" style="width:120px;height:120px;object-fit:cover;">
+  {% else %}
+    <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center" style="width:120px;height:120px;">
+      <i class="bi bi-person fs-1 text-white"></i>
+    </div>
+  {% endif %}
+
+  <div>
+    <h4 class="mb-1">{{ e.nombre }} {{ e.apellido }}</h4>
+    <p>Puesto: <strong>{{ e.puesto.nombre }}</strong></p>
+    <p>Tienda: <strong>{{ e.tienda.nombre }}</strong></p>
+    <p>Salario: <strong>Q{{ e.salario|number_format(2, '.', ',') }}</strong></p>
+    <p>Nacimiento: <strong>{{ e.fechaNacimiento|date('d/m/Y') }}</strong></p>
+  </div>
+</div>
+
+<div class="mt-4 text-end">
+  <a href="{{ path('empleado_editar', {id: e.id}) }}" class="btn btn-warning btn-sm">Editar</a>
+  <a href="{{ path('empleado_eliminar', {id: e.id}) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar a {{ e.nombre }}?')">Eliminar</a>
+</div>
