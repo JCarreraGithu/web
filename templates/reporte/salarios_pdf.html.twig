@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Salarios por Tienda</title>
+  <style>
+    /* --- Ajustes base --- */
+    @page { margin: 18mm 14mm; }
+    html, body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 12px; color: #111; }
+    h1, h2, h3 { margin: 0 0 8px; }
+    h1 { font-size: 18px; }
+    h2 { font-size: 16px; }
+    h3 { font-size: 14px; }
+    .muted { color:#666; }
+
+    /* --- Evitar cortes feos --- */
+    .grupo { margin-bottom: 14px; break-inside: avoid; page-break-inside: avoid; }
+    .header-grupo { background:#111; color:#fff; padding:8px 10px; border-radius:6px; }
+    .chip { background:#eee; color:#111; border-radius:12px; padding:2px 8px; font-size:11px; }
+
+    table { width:100%; border-collapse:collapse; margin-top:8px; }
+    thead { background:#f2f2f2; display: table-header-group; }
+    tfoot { display: table-row-group; }
+    tr { page-break-inside: avoid; }
+    th, td { border:1px solid #e0e0e0; padding:6px 8px; text-align:center; }
+    td.txt { text-align:left; }
+
+    .total { text-align:right; margin-top:6px; font-weight:bold; }
+  </style>
+</head>
+<body>
+  <h1>Salarios de Empleados por Tienda</h1>
+  <p class="muted">Generado automáticamente</p>
+
+  {% for tienda, empleados in agrupados %}
+    <section class="grupo">
+      <div class="header-grupo">
+        <h2 style="display:inline">{{ tienda }}</h2>
+        <span class="chip">{{ empleados|length }} empleado{{ empleados|length>1?'s':'' }}</span>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Apellido</th>
+            <th>Puesto</th>
+            <th>Salario (Q)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for e in empleados %}
+            <tr>
+              <td class="txt">{{ e.nombre }}</td>
+              <td class="txt">{{ e.apellido }}</td>
+              <td class="txt">{{ e.puesto.nombre }}</td>
+              <td>Q{{ e.salario|number_format(2, '.', ',') }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% else %}
+    <p class="muted">No hay registros.</p>
+  {% endfor %}
+</body>
+</html>

@@ -9,8 +9,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use App\Entity\Logros;
 use Doctrine\ORM\EntityManagerInterface;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 
@@ -26,17 +24,19 @@ class ReporteController extends AbstractController
 
         $totalSalarios = 0;
         foreach ($empleados as $empleado) {
-            $totalSalarios += $empleado->getSalario();
+            $totalSalarios += (float) $empleado->getSalario();
         }
 
+        // Notas:
+        // - Si en BD hay "Positivo/Negativo" con mayúscula, puedes normalizar aquí.
         $positivos = count($logrosRepo->findBy(['tipo' => 'positivo']));
         $negativos = count($logrosRepo->findBy(['tipo' => 'negativo']));
 
         return $this->render('reporte/index.html.twig', [
-            'empleados' => $empleados,
-            'totalSalarios' => $totalSalarios,
-            'positivos' => $positivos,
-            'negativos' => $negativos,
+            'empleados'      => $empleados,
+            'totalSalarios'  => $totalSalarios,
+            'positivos'      => $positivos,
+            'negativos'      => $negativos,
         ]);
     }
 
@@ -59,40 +59,10 @@ class ReporteController extends AbstractController
             $tienda = $e->getTienda()->getNombre();
             $agrupados[$tienda][] = $e;
         }
+        ksort($agrupados);
 
         return $this->render('reporte/salarios.html.twig', [
             'agrupados' => $agrupados,
-        ]);
-    }
-
-    #[Route('/reportes/salarios/xlsx', name: 'reporte_salarios_xlsx')]
-    public function salariosXlsx(EntityManagerInterface $em): Response
-    {
-        $empleados = $em->getRepository(\App\Entity\Empleados::class)->findAll();
-
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Salarios por Tienda');
-        $sheet->setCellValue('A1', 'Tienda');
-        $sheet->setCellValue('B1', 'Empleado');
-        $sheet->setCellValue('C1', 'Puesto');
-        $sheet->setCellValue('D1', 'Salario');
-
-        $row = 2;
-        foreach ($empleados as $e) {
-            $sheet->setCellValue("A$row", $e->getTienda()->getNombre());
-            $sheet->setCellValue("B$row", $e->getNombre() . ' ' . $e->getApellido());
-            $sheet->setCellValue("C$row", $e->getPuesto()->getNombre());
-            $sheet->setCellValue("D$row", $e->getSalario());
-            $row++;
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $tempFile = tempnam(sys_get_temp_dir(), 'salarios_') . '.xlsx';
-        $writer->save($tempFile);
-
-        return $this->file($tempFile, 'reporte_salarios.xlsx', Response::HTTP_OK, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         ]);
     }
 
@@ -101,26 +71,18 @@ class ReporteController extends AbstractController
     {
         $empleados = $empleadosRepo->findAll();
         $agrupados = [];
-
         foreach ($empleados as $e) {
             $tienda = $e->getTienda()->getNombre();
             $agrupados[$tienda][] = $e;
         }
+        ksort($agrupados);
 
-        $html = $this->renderView('reporte/salarios.html.twig', [
+        // Ojo: plantilla LIMPIA para PDF (sin extends)
+        $html = $this->renderView('reporte/salarios_pdf.html.twig', [
             'agrupados' => $agrupados,
         ]);
 
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->render();
-
-        return new Response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="reporte_salarios.pdf"'
-        ]);
+        return $this->pdfResponse($html, 'reporte_salarios.pdf');
     }
 
     // =========================================================
@@ -130,45 +92,17 @@ class ReporteController extends AbstractController
     public function reportesLogros(EntityManagerInterface $em): Response
     {
         $logros = $em->getRepository(Logros::class)->findAll();
-        $agrupados = [];
 
+        $agrupados = [];
         foreach ($logros as $logro) {
-            $empleado = $logro->getEmpleado()->getNombre() . ' ' . $logro->getEmpleado()->getApellido();
-            $agrupados[$empleado][] = $logro;
+            $emp = $logro->getEmpleado();
+            $nombre = $emp ? ($emp->getNombre() . ' ' . $emp->getApellido()) : 'Sin empleado';
+            $agrupados[$nombre][] = $logro;
         }
+        ksort($agrupados);
 
         return $this->render('reporte/logros.html.twig', [
             'agrupados' => $agrupados,
-        ]);
-    }
-
-    #[Route('/reportes/logros/xlsx', name: 'reporte_logros_xlsx')]
-    public function logrosXlsx(EntityManagerInterface $em): Response
-    {
-        $logros = $em->getRepository(Logros::class)->findAll();
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Logros');
-        $sheet->setCellValue('A1', 'Empleado');
-        $sheet->setCellValue('B1', 'Descripción');
-        $sheet->setCellValue('C1', 'Tipo');
-        $sheet->setCellValue('D1', 'Fecha');
-
-        $row = 2;
-        foreach ($logros as $l) {
-            $sheet->setCellValue("A$row", $l->getEmpleado()->getNombre() . ' ' . $l->getEmpleado()->getApellido());
-            $sheet->setCellValue("B$row", $l->getDescription());
-            $sheet->setCellValue("C$row", ucfirst($l->getTipo()));
-            $sheet->setCellValue("D$row", $l->getFechaOcurrencia()->format('d/m/Y'));
-            $row++;
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $tempFile = tempnam(sys_get_temp_dir(), 'logros_') . '.xlsx';
-        $writer->save($tempFile);
-
-        return $this->file($tempFile, 'reporte_logros.xlsx', Response::HTTP_OK, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         ]);
     }
 
@@ -176,73 +110,42 @@ class ReporteController extends AbstractController
     public function logrosPdf(EntityManagerInterface $em): Response
     {
         $logros = $em->getRepository(Logros::class)->findAll();
+
         $agrupados = [];
-
         foreach ($logros as $logro) {
-            $empleado = $logro->getEmpleado()->getNombre() . ' ' . $logro->getEmpleado()->getApellido();
-            $agrupados[$empleado][] = $logro;
+            $emp = $logro->getEmpleado();
+            $nombre = $emp ? ($emp->getNombre() . ' ' . $emp->getApellido()) : 'Sin empleado';
+            $agrupados[$nombre][] = $logro;
         }
+        ksort($agrupados);
 
-        $html = $this->renderView('reporte/logros.html.twig', [
+        // Plantilla PDF limpia
+        $html = $this->renderView('reporte/logros_pdf.html.twig', [
             'agrupados' => $agrupados,
         ]);
 
-        $options = new Options();
-        $options->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
-        $dompdf->render();
-
-        return new Response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="reporte_logros.pdf"'
-        ]);
+        return $this->pdfResponse($html, 'reporte_logros.pdf');
     }
 
     // =========================================================
-    // REPORTE DE LLAMADAS
+    // REPORTE DE LLAMADAS (NEGATIVOS)
     // =========================================================
     #[Route('/reportes/llamadas', name: 'reportes_llamadas')]
     public function reportesLlamadas(EntityManagerInterface $em): Response
     {
+        // Si en BD hay ‘Negativo’ con mayúscula, normaliza:
         $logros = $em->getRepository(Logros::class)->findBy(['tipo' => 'negativo']);
-        $agrupados = [];
 
+        $agrupados = [];
         foreach ($logros as $logro) {
-            $empleado = $logro->getEmpleado()->getNombre() . ' ' . $logro->getEmpleado()->getApellido();
-            $agrupados[$empleado][] = $logro;
+            $emp = $logro->getEmpleado();
+            $nombre = $emp ? ($emp->getNombre() . ' ' . $emp->getApellido()) : 'Sin empleado';
+            $agrupados[$nombre][] = $logro;
         }
+        ksort($agrupados);
 
         return $this->render('reporte/llamadas.html.twig', [
             'agrupados' => $agrupados,
-        ]);
-    }
-
-    #[Route('/reportes/llamadas/xlsx', name: 'reporte_llamadas_xlsx')]
-    public function llamadasXlsx(EntityManagerInterface $em): Response
-    {
-        $logros = $em->getRepository(Logros::class)->findBy(['tipo' => 'negativo']);
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('Llamadas de Atención');
-        $sheet->setCellValue('A1', 'Empleado');
-        $sheet->setCellValue('B1', 'Descripción');
-        $sheet->setCellValue('C1', 'Fecha');
-
-        $row = 2;
-        foreach ($logros as $l) {
-            $sheet->setCellValue("A$row", $l->getEmpleado()->getNombre() . ' ' . $l->getEmpleado()->getApellido());
-            $sheet->setCellValue("B$row", $l->getDescription());
-            $sheet->setCellValue("C$row", $l->getFechaOcurrencia()->format('d/m/Y'));
-            $row++;
-        }
-
-        $writer = new Xlsx($spreadsheet);
-        $tempFile = tempnam(sys_get_temp_dir(), 'llamadas_') . '.xlsx';
-        $writer->save($tempFile);
-
-        return $this->file($tempFile, 'reporte_llamadas.xlsx', Response::HTTP_OK, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         ]);
     }
 
@@ -250,26 +153,41 @@ class ReporteController extends AbstractController
     public function llamadasPdf(EntityManagerInterface $em): Response
     {
         $logros = $em->getRepository(Logros::class)->findBy(['tipo' => 'negativo']);
+
         $agrupados = [];
-
         foreach ($logros as $logro) {
-            $empleado = $logro->getEmpleado()->getNombre() . ' ' . $logro->getEmpleado()->getApellido();
-            $agrupados[$empleado][] = $logro;
+            $emp = $logro->getEmpleado();
+            $nombre = $emp ? ($emp->getNombre() . ' ' . $emp->getApellido()) : 'Sin empleado';
+            $agrupados[$nombre][] = $logro;
         }
+        ksort($agrupados);
 
-        $html = $this->renderView('reporte/llamadas.html.twig', [
+        // Plantilla PDF limpia
+        $html = $this->renderView('reporte/llamadas_pdf.html.twig', [
             'agrupados' => $agrupados,
         ]);
 
+        return $this->pdfResponse($html, 'reporte_llamadas.pdf');
+    }
+
+    // =========================================================
+    // Helper único para emitir PDF
+    // =========================================================
+    private function pdfResponse(string $html, string $filename): Response
+    {
         $options = new Options();
-        $options->set('defaultFont', 'Arial');
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'DejaVu Sans'); // soporta tildes/ñ
+
         $dompdf = new Dompdf($options);
-        $dompdf->loadHtml($html);
+        $dompdf->loadHtml($html, 'UTF-8');
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
-        return new Response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="reporte_llamadas.pdf"'
-        ]);
+        // Mostrar en navegador (no forzar descarga)
+        $dompdf->stream($filename, ['Attachment' => false]);
+
+        return new Response('', 200, ['Content-Type' => 'application/pdf']);
     }
 }

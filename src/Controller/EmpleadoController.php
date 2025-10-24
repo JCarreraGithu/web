@@ -38,24 +38,35 @@ class EmpleadoController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $fotoFile = $form->get('fotografia')->getData();
 
+            $uploadsDir = $this->getParameter('uploads_directory');
+
+            // Asegurar carpeta y probar escritura con un archivo temporal
+            if (!is_dir($uploadsDir)) {
+                @mkdir($uploadsDir, 0777, true);
+            }
+            $test = $uploadsDir . DIRECTORY_SEPARATOR . '.perm_test';
+            if (@file_put_contents($test, 'ok') === false) {
+                $this->addFlash('error', 'Error al subir la imagen: La carpeta de uploads no es escribible: ' . $uploadsDir);
+                return $this->redirectToRoute('empleados_lista');
+            }
+            @unlink($test);
+
+            // Subida de imagen (opcional)
+            $fotoFile = $form->get('fotografia')->getData();
             if ($fotoFile) {
                 $originalFilename = pathinfo($fotoFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $fotoFile->guessExtension();
+                $safeFilename = (string) $slugger->slug($originalFilename);
+                $extension = $fotoFile->guessExtension() ?: 'bin';
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
 
                 try {
-                    $fotoFile->move(
-                        $this->getParameter('uploads_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Error al subir la imagen.');
+                    $fotoFile->move($uploadsDir, $newFilename);
+                    $empleado->setFotografia($newFilename);
+                } catch (\Throwable $e) {
+                    $this->addFlash('error', 'Error al subir la imagen: ' . $e->getMessage());
                     return $this->redirectToRoute('empleados_lista');
                 }
-
-                $empleado->setFotografia($newFilename);
             }
 
             $empleado->setCreatedAt(new \DateTimeImmutable());
@@ -63,10 +74,10 @@ class EmpleadoController extends AbstractController
             $em->flush();
 
             $this->addFlash('success', 'Empleado registrado correctamente.');
-        } else {
-            $this->addFlash('error', 'Revisa los campos del formulario.');
+            return $this->redirectToRoute('empleados_lista');
         }
 
+        $this->addFlash('error', 'Revisa los campos del formulario.');
         return $this->redirectToRoute('empleados_lista');
     }
 
@@ -85,27 +96,36 @@ class EmpleadoController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $fotoFile = $form->get('fotografia')->getData();
 
+            $uploadsDir = $this->getParameter('uploads_directory');
+
+            if (!is_dir($uploadsDir)) {
+                @mkdir($uploadsDir, 0777, true);
+            }
+            $test = $uploadsDir . DIRECTORY_SEPARATOR . '.perm_test';
+            if (@file_put_contents($test, 'ok') === false) {
+                $this->addFlash('error', 'Error al subir la imagen: La carpeta de uploads no es escribible: ' . $uploadsDir);
+                return $this->redirectToRoute('empleados_lista');
+            }
+            @unlink($test);
+
+            $fotoFile = $form->get('fotografia')->getData();
             if ($fotoFile) {
                 $originalFilename = pathinfo($fotoFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $fotoFile->guessExtension();
+                $safeFilename = (string) $slugger->slug($originalFilename);
+                $extension = $fotoFile->guessExtension() ?: 'bin';
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
 
                 try {
-                    $fotoFile->move(
-                        $this->getParameter('uploads_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Error al subir la imagen.');
+                    $fotoFile->move($uploadsDir, $newFilename);
+                    $empleado->setFotografia($newFilename);
+                } catch (\Throwable $e) {
+                    $this->addFlash('error', 'Error al subir la imagen: ' . $e->getMessage());
+                    return $this->redirectToRoute('empleados_lista');
                 }
-
-                $empleado->setFotografia($newFilename);
             }
 
             $em->flush();
-
             $this->addFlash('success', 'Empleado actualizado correctamente.');
             return $this->redirectToRoute('empleados_lista');
         }

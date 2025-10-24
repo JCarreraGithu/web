@@ -1,31 +1,24 @@
 {% extends 'dashboard/layout.html.twig' %}
 {% block title %}👷 Lista de Empleados{% endblock %}
+{% form_theme form 'bootstrap_5_layout.html.twig' %}
 
 {% block dashboard_content %}
 <style>
-  body {
-    background: radial-gradient(circle at top left, #0a0f1e, #111827);
-    color: #e2e8f0;
-  }
-  .card {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-  }
-  .card-header {
-    background: linear-gradient(135deg, #2563eb, #7c3aed) !important;
-  }
+  body { background: radial-gradient(circle at top left, #0a0f1e, #111827); color: #e2e8f0; }
+  .card { background: rgba(255,255,255,.05); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.1); }
+  .card-header { background: linear-gradient(135deg,#2563eb,#7c3aed)!important; }
   .table { color: #f8fafc; }
-  .table thead { background: linear-gradient(135deg, #2563eb, #7c3aed); }
-  .table-hover tbody tr:hover {
-    background: rgba(100, 149, 237, 0.1) !important;
-  }
+  .table thead { background: linear-gradient(135deg,#2563eb,#7c3aed); }
+  .table-hover tbody tr:hover { background: rgba(100,149,237,.1)!important; }
+  .preview-foto { width:120px;height:120px;object-fit:cover;border-radius:1rem;border:1px solid #e9ecef; }
+  .form-label { color:#1f2937; font-weight:600; }
 </style>
 
 <div class="container-fluid py-4">
   <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
     <div class="card-header text-white d-flex justify-content-between align-items-center p-3">
       <h3 class="mb-0 fw-bold"><i class="bi bi-people-fill me-2"></i> Lista de Empleados</h3>
+      <!-- SOLO abre modal; no hace GET a /empleado/nuevo -->
       <button class="btn btn-light btn-sm fw-semibold shadow-sm px-3" data-bs-toggle="modal" data-bs-target="#nuevoEmpleadoModal">
         <i class="bi bi-person-plus-fill text-primary"></i> Nuevo Empleado
       </button>
@@ -38,52 +31,56 @@
           <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
       {% endfor %}
+      {% for message in app.flashes('error') %}
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      {% endfor %}
 
       <div class="table-responsive rounded-4 shadow-sm">
         <table class="table align-middle table-borderless table-hover mb-0">
           <thead>
             <tr>
-              <th>#</th>
-              <th>Foto</th>
-              <th>Nombre</th>
-              <th>Apellido</th>
-              <th>Puesto</th>
-              <th>Tienda</th>
-              <th>Salario</th>
-              <th>Nacimiento</th>
+              <th>#</th><th>Foto</th><th>Nombre</th><th>Apellido</th>
+              <th>Puesto</th><th>Tienda</th><th>Salario</th><th>Nacimiento</th>
               <th class="text-center">Acciones</th>
             </tr>
           </thead>
           <tbody>
-            {% for e in empleados %}
-              <tr>
-                <td class="fw-bold text-secondary">{{ e.id }}</td>
-                <td>
-                  {% if e.fotografia %}
-                    <img src="{{ asset('uploads/' ~ e.fotografia) }}" alt="foto" class="rounded-circle border shadow-sm" style="width:55px;height:55px;object-fit:cover;">
-                  {% else %}
-                    <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center" style="width:55px;height:55px;">
-                      <i class="bi bi-person text-light fs-4"></i>
-                    </div>
-                  {% endif %}
-                </td>
-                <td>{{ e.nombre }}</td>
-                <td>{{ e.apellido }}</td>
-                <td>{{ e.puesto.nombre }}</td>
-                <td>{{ e.tienda.nombre }}</td>
-                <td>Q{{ e.salario|number_format(2, '.', ',') }}</td>
-                <td>{{ e.fechaNacimiento|date('d/m/Y') }}</td>
-                <td class="text-center">
-                  <div class="btn-group">
-                    <a href="{{ path('empleado_ver', {'id': e.id}) }}" class="btn btn-outline-primary btn-sm btn-ver-empleado" title="Ver Detalles"><i class="bi bi-eye"></i></a>
-                    <a href="{{ path('empleado_editar', {'id': e.id}) }}" class="btn btn-outline-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
-                    <a href="{{ path('empleado_eliminar', {'id': e.id}) }}" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Eliminar a {{ e.nombre }}?')"><i class="bi bi-trash"></i></a>
+          {% for e in empleados %}
+            <tr>
+              <td class="fw-bold text-secondary">{{ e.id }}</td>
+              <td>
+                {% if e.fotografia %}
+                  <img src="{{ asset('uploads/' ~ e.fotografia) }}"
+                       class="rounded-circle border shadow-sm"
+                       style="width:55px;height:55px;object-fit:cover;"
+                       onerror="this.onerror=null;this.src='{{ asset('uploads/placeholder-user.png') }}'">
+                {% else %}
+                  <div class="rounded-circle bg-secondary d-flex justify-content-center align-items-center"
+                       style="width:55px;height:55px;">
+                    <i class="bi bi-person text-light fs-4"></i>
                   </div>
-                </td>
-              </tr>
-            {% else %}
-              <tr><td colspan="9" class="text-center text-muted py-4">No hay empleados registrados.</td></tr>
-            {% endfor %}
+                {% endif %}
+              </td>
+              <td>{{ e.nombre }}</td>
+              <td>{{ e.apellido }}</td>
+              <td>{{ e.puesto.nombre }}</td>
+              <td>{{ e.tienda.nombre }}</td>
+              <td>Q{{ e.salario|number_format(2, '.', ',') }}</td>
+              <td>{{ e.fechaNacimiento|date('d/m/Y') }}</td>
+              <td class="text-center">
+                <div class="btn-group">
+                  <a href="{{ path('empleado_ver', {'id': e.id}) }}" class="btn btn-outline-primary btn-sm btn-ver-empleado" title="Ver"><i class="bi bi-eye"></i></a>
+                  <a href="{{ path('empleado_editar', {'id': e.id}) }}" class="btn btn-outline-warning btn-sm"><i class="bi bi-pencil-square"></i></a>
+                  <a href="{{ path('empleado_eliminar', {'id': e.id}) }}" class="btn btn-outline-danger btn-sm" onclick="return confirm('¿Eliminar a {{ e.nombre }}?')"><i class="bi bi-trash"></i></a>
+                </div>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="9" class="text-center text-muted py-4">No hay empleados registrados.</td></tr>
+          {% endfor %}
           </tbody>
         </table>
       </div>
@@ -91,7 +88,7 @@
   </div>
 </div>
 
-<!-- Modal de Nuevo Empleado -->
+<!-- Modal: Nuevo Empleado (POST a empleado_nuevo) -->
 <div class="modal fade" id="nuevoEmpleadoModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -99,28 +96,61 @@
         <h5 class="modal-title fw-bold"><i class="bi bi-person-plus-fill me-2"></i> Registrar Nuevo Empleado</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
+
       <div class="modal-body bg-light p-4">
-        {{ form_start(form, {'attr': {'enctype': 'multipart/form-data'}}) }}
-          <div class="row">
-            <div class="col-md-6 mb-3">{{ form_row(form.nombre) }}</div>
-            <div class="col-md-6 mb-3">{{ form_row(form.apellido) }}</div>
-            <div class="col-md-6 mb-3">{{ form_row(form.fecha_nacimiento) }}</div>
-            <div class="col-md-6 mb-3">{{ form_row(form.salario) }}</div>
-            <div class="col-md-6 mb-3">{{ form_row(form.puesto) }}</div>
-            <div class="col-md-6 mb-3">{{ form_row(form.tienda) }}</div>
-            <div class="col-md-12 mb-3">{{ form_row(form.fotografia) }}</div>
+        {{ form_start(form, {
+          attr: {
+            enctype: 'multipart/form-data',
+            class: 'needs-validation',
+            novalidate: true
+          }
+        }) }}
+
+        <div class="row g-3">
+          <div class="col-md-6">{{ form_row(form.nombre) }}</div>
+          <div class="col-md-6">{{ form_row(form.apellido) }}</div>
+          <div class="col-md-6">{{ form_row(form.fecha_nacimiento) }}</div>
+
+          <div class="col-md-6">
+            <label class="form-label">Salario</label>
+            <div class="input-group">
+              <span class="input-group-text">Q</span>
+              {{ form_widget(form.salario, { attr: { class:'form-control', step:'0.01', min:'0', placeholder:'0.00' } }) }}
+            </div>
+            {{ form_errors(form.salario) }}
           </div>
-          <div class="text-end">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Guardar</button>
+
+          <div class="col-md-6">{{ form_row(form.puesto) }}</div>
+          <div class="col-md-6">{{ form_row(form.tienda) }}</div>
+
+          <div class="col-md-7">
+            {{ form_label(form.fotografia, 'Fotografía') }}
+            {{ form_widget(form.fotografia, {
+              attr: { class:'form-control', accept:'image/png,image/jpeg,image/jpg,image/webp', onchange:'previewFoto(event)' }
+            }) }}
+            {{ form_errors(form.fotografia) }}
+            <div class="form-text">PNG/JPG/WEBP — máx. 2 MB.</div>
           </div>
+          <div class="col-md-5 d-flex align-items-end">
+            <div>
+              <div class="form-text mb-2">Vista previa:</div>
+              <img id="fotoPreview" class="preview-foto" src="{{ asset('uploads/placeholder-user.png') }}" alt="Vista previa">
+            </div>
+          </div>
+        </div>
+
+        <div class="text-end mt-3">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar</button>
+        </div>
+
         {{ form_end(form) }}
       </div>
     </div>
   </div>
 </div>
 
-<!-- Modal Detalle Empleado -->
+<!-- Modal Detalle -->
 <div class="modal fade" id="modalVerEmpleado" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content rounded-4 border-0 shadow-lg">
@@ -140,20 +170,31 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+  // preview imagen
+  window.previewFoto = (e) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const ok = ['image/png','image/jpeg','image/jpg','image/webp'];
+    if (!ok.includes(f.type)) { alert('Formato no permitido'); e.target.value=''; return; }
+    if (f.size > 2*1024*1024) { alert('Máximo 2 MB'); e.target.value=''; return; }
+    const url = URL.createObjectURL(f);
+    const img = document.getElementById('fotoPreview');
+    img.src = url; img.onload = () => URL.revokeObjectURL(url);
+  };
+
+  // modal detalle AJAX
   const modal = new bootstrap.Modal(document.getElementById('modalVerEmpleado'));
-  const modalBody = document.getElementById('modalVerEmpleadoBody');
+  const body = document.getElementById('modalVerEmpleadoBody');
   document.querySelectorAll('.btn-ver-empleado').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
-      const url = btn.getAttribute('href');
       modal.show();
-      modalBody.innerHTML = '<div class="text-center py-4 text-muted"><div class="spinner-border text-primary"></div><p>Cargando...</p></div>';
+      body.innerHTML = '<div class="text-center py-4 text-muted"><div class="spinner-border text-primary"></div><p>Cargando...</p></div>';
       try {
-        const response = await fetch(url);
-        const html = await response.text();
-        modalBody.innerHTML = html;
+        const html = await (await fetch(btn.getAttribute('href'))).text();
+        body.innerHTML = html;
       } catch {
-        modalBody.innerHTML = '<div class="alert alert-danger">Error al cargar los datos.</div>';
+        body.innerHTML = '<div class="alert alert-danger">Error al cargar los datos.</div>';
       }
     });
   });

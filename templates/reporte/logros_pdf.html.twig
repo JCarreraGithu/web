@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Reporte de Logros</title>
+  <style>
+    @page { margin: 18mm 14mm; }
+    html, body { font-family: "DejaVu Sans", Arial, sans-serif; font-size: 12px; color:#111; }
+    h1, h2 { margin:0 0 8px; }
+    h1 { font-size:18px; } h2 { font-size:15px; }
+    .muted{ color:#666; }
+
+    .grupo { margin-bottom:14px; break-inside:avoid; page-break-inside:avoid; }
+    .header-grupo{ background:#0b5; color:#fff; padding:8px 10px; border-radius:6px; }
+
+    table{ width:100%; border-collapse:collapse; margin-top:8px; }
+    thead{ background:#f2fff5; display: table-header-group; }
+    tr{ page-break-inside:avoid; }
+    th,td{ border:1px solid #dfeee3; padding:6px 8px; text-align:center; }
+    td.txt{ text-align:left; }
+    .badge-pos{ background:#16a34a; color:#fff; border-radius:10px; padding:2px 8px; font-size:11px; }
+    .badge-neg{ background:#dc2626; color:#fff; border-radius:10px; padding:2px 8px; font-size:11px; }
+  </style>
+</head>
+<body>
+  <h1>Reporte de Logros por Empleado</h1>
+  <p class="muted">Generado automáticamente</p>
+
+  {% for empleado, logros in agrupados %}
+    <section class="grupo">
+      <div class="header-grupo">
+        <h2>{{ empleado }}</h2>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Descripción</th>
+            <th>Tipo</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l in logros %}
+            <tr>
+              <td class="txt">{{ l.description }}</td>
+              <td>
+                {% set t = l.tipo|lower %}
+                {% if t == 'positivo' %}
+                  <span class="badge-pos">Positivo</span>
+                {% else %}
+                  <span class="badge-neg">Negativo</span>
+                {% endif %}
+              </td>
+              <td>{{ l.fechaOcurrencia|date('d/m/Y') }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% else %}
+    <p class="muted">No hay registros.</p>
+  {% endfor %}
+</body>
+</html>
